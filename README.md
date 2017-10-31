@@ -3,7 +3,7 @@
 * Using a busted, old API with XML to display its powers under the spell of GraphQL.
 * Thanks FunFunFunction for making learning more fun 🎉
 
-NOTE: I'm using another API other than the one he uses, b/c I wanted a little challenge to not parrot code byte-for-byte.
+> *NOTE:* I'm using another API other than the one he uses, b/c I wanted a little challenge to not parrot code byte-for-byte.
 
 ### References 📖
 
