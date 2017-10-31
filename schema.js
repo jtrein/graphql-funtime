@@ -18,13 +18,19 @@ const options = {
 
 // REFS:
 //   * https://www.youtube.com/watch?v=lAJWHHUz8_8
+//   * https://www.youtube.com/watch?v=RMtq0RCLuzs
 //   * http://bibles.org/pages/api/documentation
 
-const PassageType = new GraphQLObjectType({
-  name: 'Passage',
+const PassagesType = new GraphQLObjectType({
+  name: 'Passages',
   description: '...',
 
   fields: () => ({
+    collection: {
+      type: new GraphQLList(PassageType),
+      resolve: xml =>
+        xml.response.search[0].result[0].passages[0].passage
+    },
     display: {
       type: GraphQLString,
       resolve: xml =>
@@ -34,7 +40,23 @@ const PassageType = new GraphQLObjectType({
       type: GraphQLString,
       resolve: xml =>
         xml.response.search[0].result[0].passages[0].passage[0].text[0]
-    }
+    },
+  }),
+})
+
+const PassageType = new GraphQLObjectType({
+  name: 'Passage',
+  description: '...',
+
+  fields: () => ({
+    display: {
+      type: GraphQLString,
+      resolve: xml => xml.display[0]
+    },
+    text: {
+      type: GraphQLString,
+      resolve: xml => xml.text[0]
+    },
   }),
 })
 
@@ -75,13 +97,49 @@ const BookType = new GraphQLObjectType({
   fields: () => ({
     name: {
       type: GraphQLString,
-      resolve: (res) =>
-        res.name[0]
+      resolve: res => res.name[0]
     },
     testament: {
       type: GraphQLString,
-      resolve: (res) =>
-        res.testament[0]
+      resolve: res => res.testament[0]
+    }
+  })
+})
+
+const ChapterType = new GraphQLObjectType({
+  name: 'Chapter',
+  description: '...',
+
+  fields: () => ({
+    number: {
+      type: GraphQLString,
+      resolve: res => res.chapter[0]
+    },
+    next: {
+      type: GraphQLString,
+      resolve: res => res.next[0].chapter[0].name[0]
+    },
+    parent: {
+      type: GraphQLString,
+      resolve: res => res.parent[0].book[0].name[0]
+    },
+    previous: {
+      type: GraphQLString,
+      resolve: res => {
+        if (res.previous) return res.previous[0].chapter[0].name[0]
+      }
+    },
+  })
+})
+
+const ChaptersType = new GraphQLObjectType({
+  name: 'Chapters',
+  description: '...',
+
+  fields: () => ({
+    collection: {
+      type: new GraphQLList(ChapterType),
+      resolve: xml => xml.response.chapters[0].chapter
     }
   })
 })
@@ -92,14 +150,30 @@ module.exports = new GraphQLSchema({
     description: '...',
 
     fields: () => ({
-      passage: {
-        type: PassageType,
+      chapters: {
+        type: ChaptersType,
         args: {
           id: { type: GraphQLString },
+          version: { type: GraphQLString },
         },
-        resolve: (root, args) => (
+        resolve: (root, { id = 'Gen', version = 'eng-KJV' }) => (
           fetch(
-            `https://bibles.org/v2/passages.xml?q[]=${args.id}&version=eng-KJVA`,
+            `https://bibles.org/v2/books/${version}:${id}/chapters.xml`,
+            options
+          )
+          .then(res => res.text())
+          .then(res => parseXML(res))
+        ),
+      },
+      passage: {
+        type: PassagesType,
+        args: {
+          id: { type: GraphQLString },
+          version: { type: GraphQLString },
+        },
+        resolve: (root, { id, version = 'eng-KJV' }) => (
+          fetch(
+            `https://bibles.org/v2/passages.xml?q[]=${id}&version=${version}`,
             options
           )
           .then(res => res.text())
