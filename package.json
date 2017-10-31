@@ -1,0 +1,18 @@
+{
+  "name": "graphql-funtime",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:jtrein/graphql-funtime.git",
+  "author": "Jeremiah Trein <jeremiahtrein@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-graphql": "^0.6.11",
+    "graphql": "^0.11.7",
+    "node-fetch": "^1.7.3",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}
